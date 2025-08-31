@@ -1,0 +1,15 @@
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+.wrap { width: 240px; padding: 12px; }
+h1 { font-size: 16px; margin: 0 0 10px; }
+button {
+    width: 100%;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.2);
+    background: #f3f3f3;
+    cursor: pointer;
+}
+button:hover { background: #eaeaea; }
+.hint { color: #555; margin-top: 6px; font-size: 12px; }

@@ -1,0 +1,131 @@
+/* =======================================================
+   YT Tools — content.css (fullt omskriven, isolerad styling)
+   - Full Window wrap
+   - Flex wrap (resizable)
+   - Letterbox-fit (inga konstiga zooms)
+   - Anti black-screen neutralisering
+   ======================================================= */
+
+/* ---------- FULL WINDOW WRAP (fyll hela fönstret) ---------- */
+.yt-ext-fw-wrap {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    /* Fallback + modern viewport-höjd för exakt fönsterhöjd */
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 2147483646 !important;     /* under knapparna men över allt annat */
+    background: #000 !important;
+    overflow: hidden !important;
+}
+
+/* ---------- FLEX WRAP (flytande, resizable) ---------- */
+.yt-ext-flex-wrap {
+    position: fixed !important;
+    top: 72px !important;                /* lite luft från YT-headern */
+    left: 72px !important;
+    width: 1280px !important;
+    height: 720px !important;
+    min-width: 480px !important;
+    min-height: 270px !important;
+    resize: both !important;
+    overflow: hidden !important;
+    background: #000 !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5) !important;
+    z-index: 2147483645 !important;      /* under FW + knappar */
+}
+
+/* Visuell resize-indikator (om din JS lägger till .yt-ext-flex-handle) */
+.yt-ext-flex-wrap .yt-ext-flex-handle {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    right: 6px;
+    bottom: 6px;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 4px;
+    background: rgba(0,0,0,0.35);
+    cursor: nwse-resize;
+    z-index: 2147483647;
+}
+
+/* ---------- FYLL SPELAREN I WRAPPERS ---------- */
+/* Din moveIntoWrapper() sätter .yt-ext-size-fill på ytd-player */
+.yt-ext-size-fill,
+.yt-ext-size-fill #movie_player,
+.yt-ext-size-fill .html5-video-container,
+.yt-ext-size-fill video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+/* ---------- LETTERBOX-FIT (inga konstiga zooms) ---------- */
+.yt-ext-fw-wrap .html5-video-container,
+.yt-ext-flex-wrap .html5-video-container {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #000 !important;
+    transform: none !important;          /* neutralisera YT-zoom */
+    will-change: auto !important;
+}
+
+.yt-ext-fw-wrap video.html5-main-video,
+.yt-ext-flex-wrap video.html5-main-video,
+.yt-ext-fw-wrap video,
+.yt-ext-flex-wrap video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: contain !important;      /* ⬅️ kärnan: behåll ratio + blackbars */
+    object-position: center center !important;
+    background: #000 !important;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+/* Se till att overlay/captions inte klipps bort */
+.yt-ext-fw-wrap #movie_player,
+.yt-ext-flex-wrap #movie_player {
+    width: 100% !important;
+    height: 100% !important;
+    background: transparent !important;
+}
+
+/* ---------- ANTI BLACK-SCREEN SAFETY ---------- */
+.yt-ext-fw-wrap .html5-video-container,
+.yt-ext-flex-wrap .html5-video-container {
+    /* ibland lämnar YouTube kvar en transform som låser videon → neutralisera */
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+/* ---------- LÅS SID-SCROLL NÄR FULL WINDOW ÄR PÅ ---------- */
+html.yt-ext-no-scroll,
+body.yt-ext-no-scroll {
+    overflow: hidden !important;
+}
+
+/* ---------- (Valfritt) fokus-stöd om du har tabbbar knappar inne i wraps ---------- */
+.yt-ext-fw-wrap :focus-visible,
+.yt-ext-flex-wrap :focus-visible {
+    outline: 2px solid #8ab4ff;
+    outline-offset: 2px;
+}
+
+/* ---------- Små responsiva tweaks ---------- */
+@media (max-width: 1200px) {
+    .yt-ext-flex-wrap {
+        top: 56px !important;
+        left: 32px !important;
+        width: min(92vw, 1280px) !important;
+        height: min(52vw, 720px) !important;
+    }
+}

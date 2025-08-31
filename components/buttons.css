@@ -1,0 +1,33 @@
+/* Flytande knappgrupp, påverkar inte YouTubes layout */
+#yt-ext-buttons-root {
+    position: fixed;
+    /* var 16px; flytta 10px åt höger och 10px upp */
+    top: 6px;
+    right: 6px;
+    z-index: 2147483647;
+    pointer-events: none;
+}
+
+#yt-ext-buttons-root .yt-ext-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.35);
+    pointer-events: auto; /* ...men tillåt klick på själva gruppen */
+}
+#yt-ext-buttons-root .yt-ext-btn {
+    font: inherit;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    cursor: pointer;
+}
+#yt-ext-buttons-root .yt-ext-btn:hover {
+    background: rgba(255,255,255,0.18);
+}
