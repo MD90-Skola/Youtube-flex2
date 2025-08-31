@@ -1,44 +1,63 @@
-/* Full Window – overlay som fyller viewporten, letterbox och zoom (1.00–5.00) */
-.yt-ext-fw-wrap {
+/* Fast overlay + mjuka övergångar */
+html.yt-ext-no-scroll, body.yt-ext-no-scroll { overflow: hidden !important; }
+
+ytd-watch-flexy.yt-ext-fullwindow-active #player-theater-container,
+ytd-watch-flexy.yt-ext-fullwindow-active #player-container,
+ytd-watch-flexy.yt-ext-fullwindow-active #player {
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     height: 100dvh !important;
     z-index: 2147483646 !important;
-    background: #000 !important;
-    overflow: hidden !important;
-    --yt-ext-zoom: 1;
-}
-.yt-ext-size-fill,
-.yt-ext-size-fill #movie_player,
-.yt-ext-size-fill .html5-video-container,
-.yt-ext-size-fill video {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-}
-.yt-ext-fw-wrap .html5-video-container {
-    position: absolute !important;
-    inset: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     background: #000 !important;
-    transform: none !important;
-    will-change: auto !important;
+    overflow: hidden !important;
+    opacity: 1;
+    transform: scale(1);
 }
-.yt-ext-fw-wrap video.html5-main-video,
-.yt-ext-fw-wrap video {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: contain !important;      /* blackbars vid behov */
-    object-position: center center !important;
-    background: #000 !important;
-    transform-origin: center center !important;
-    transform: scale(var(--yt-ext-zoom)) !important; /* 1.00–5.00 */
-    will-change: transform !important;
-    opacity: 1 !important;
+
+/* Enter (prep -> entering -> ready) */
+ytd-watch-flexy.yt-ext-fw-prep #player-theater-container,
+ytd-watch-flexy.yt-ext-fw-prep #player-container,
+ytd-watch-flexy.yt-ext-fw-prep #player { will-change: transform, opacity; }
+
+ytd-watch-flexy.yt-ext-fw-entering #player-theater-container,
+ytd-watch-flexy.yt-ext-fw-entering #player-container,
+ytd-watch-flexy.yt-ext-fw-entering #player {
+    opacity: 0; transform: scale(0.985);
 }
-html.yt-ext-no-scroll, body.yt-ext-no-scroll { overflow: hidden !important; }
+
+ytd-watch-flexy.yt-ext-fw-entering.yt-ext-fullwindow-active #player-theater-container,
+ytd-watch-flexy.yt-ext-fw-entering.yt-ext-fullwindow-active #player-container,
+ytd-watch-flexy.yt-ext-fw-entering.yt-ext-fullwindow-active #player {
+    transition: opacity .22s ease-out, transform .22s ease-out;
+    opacity: 1; transform: scale(1);
+}
+
+/* Exit */
+ytd-watch-flexy.yt-ext-fw-leaving #player-theater-container,
+ytd-watch-flexy.yt-ext-fw-leaving #player-container,
+ytd-watch-flexy.yt-ext-fw-leaving #player {
+    transition: opacity .24s ease-in, transform .24s ease-in;
+    opacity: 0; transform: scale(0.985);
+}
+
+/* Neutralisera transforms + centrera video */
+ytd-watch-flexy.yt-ext-fullwindow-active .html5-video-container {
+    position: absolute !important; inset: 0 !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    background: #000 !important; transform: none !important; will-change: auto !important;
+}
+
+/* Videon fyller containern; zoom via --yt-ext-zoom */
+ytd-watch-flexy.yt-ext-fullwindow-active video.html5-main-video,
+ytd-watch-flexy.yt-ext-fullwindow-active video {
+    width: 100% !important; height: 100% !important;
+    object-fit: contain !important; object-position: center center !important;
+    background: #000 !important; transform-origin: center center !important;
+    transform: scale(var(--yt-ext-zoom, 1)) !important;
+    will-change: transform !important; opacity: 1 !important;
+}

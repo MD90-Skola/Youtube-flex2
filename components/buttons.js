@@ -1,6 +1,5 @@
-// FullWindow-knapp + slot för zoom; exponerar setFullButtonLabel()
+// Flytande panel: FullWindow-knapp + zoom-slot
 const ROOT_ID = "yt-ext-buttons-root";
-let fullBtn = null;
 
 function injectCss() {
     const href = chrome.runtime.getURL("components/buttons.css");
@@ -12,18 +11,14 @@ function injectCss() {
     }
 }
 
-export function setFullButtonLabel(text) {
-    if (fullBtn) fullBtn.textContent = text;
-}
-
-export function attachButtons({ onFullWindow }) {
+export function attachButtons({ onFullWindow } = {}) {
     injectCss();
 
     let root = document.getElementById(ROOT_ID);
     if (!root) {
         root = document.createElement("div");
         root.id = ROOT_ID;
-        document.body.appendChild(root);
+        document.documentElement.appendChild(root);
     }
 
     root.innerHTML = `
@@ -34,8 +29,6 @@ export function attachButtons({ onFullWindow }) {
       <div class="yt-ext-zoom-slot"></div>
     </div>
   `;
-
-    fullBtn = root.querySelector("#yt-ext-btn-fullwindow");
 
     root.addEventListener("click", (e) => {
         const btn = e.target.closest(".yt-ext-btn");

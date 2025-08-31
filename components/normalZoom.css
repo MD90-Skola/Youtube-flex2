@@ -1,0 +1,32 @@
+/* components/normalZoom.css — centrerar normal-zoom med Grid + skalar WRAPPERN */
+
+html.yt-ext-normalzoom-active #player,
+html.yt-ext-normalzoom-active #player-container,
+html.yt-ext-normalzoom-active #player-theater-container {
+    /* Centrera innehållet (WRAPPERN) */
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;   /* klipp kanter när vi zoomar */
+    background: #000 !important;   /* snygg letterbox */
+}
+
+/* Wrapper som vi skalar (inte <video>) */
+#yt-ext-normalzoom-wrap,
+.yt-ext-normalzoom-wrap {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    display: flex;                 /* låt containern ligga centrerad även i WRAPPERN */
+    align-items: center;
+    justify-content: center;
+    transform-origin: center center !important;
+    will-change: transform;
+}
+
+/* Se till att själva video-containern fyller ytan i WRAPPERN (utan transform/zoom) */
+#yt-ext-normalzoom-wrap > .html5-video-container {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* OBS: vi rör inte .html5-video-player eller .ytp-* => UI behåller utseendet */

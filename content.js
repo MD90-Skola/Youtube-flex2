@@ -1,65 +1,89 @@
-// Mountar UI, uppdaterar knapptext, och ser till att zoom appliceras direkt.
-const urls = {
-    buttons: chrome.runtime.getURL("components/buttons.js"),
-    full:    chrome.runtime.getURL("components/fullWindow.js"),
-    zoom:    chrome.runtime.getURL("components/zoom.js"),
-};
-
-let Mods = { buttons: null, full: null, zoom: null };
-
-async function loadAll() {
-    const [buttons, full, zoom] = await Promise.all([
-        import(urls.buttons),
-        import(urls.full),
-        import(urls.zoom),
-    ]);
-    Mods = { buttons, full, zoom };
-}
-
-function activeWrapper() {
-    return document.querySelector(".yt-ext-fw-wrap") || null;
-}
-
-function mountUI() {
-    if (!Mods.buttons || !Mods.zoom) return;
-
-    const root = Mods.buttons.attachButtons({
-        onFullWindow: () => {
-            Mods.full?.toggleFullWindow?.();
-            // applicera zoom & uppdatera label efter toggle
-            setTimeout(() => {
-                Mods.zoom?.applyZoomTo?.(activeWrapper());
-            }, 0);
-        }
-    });
-
-    // zoom in i knapplådan + init
-    Mods.zoom.mountIntoButtons(root, () => activeWrapper());
-    Mods.zoom.applyZoomTo(activeWrapper());
-
-    // lyssna på FW-state för att byta knapptext
-    window.addEventListener("YT_EXT_FW_STATE", (e) => {
-        Mods.buttons?.setFullButtonLabel?.(e?.detail?.active ? "Normal" : "FullWindow");
-    }, { passive: true });
-
-    // initial label
-    Mods.buttons?.setFullButtonLabel?.(activeWrapper() ? "Normal" : "FullWindow");
-}
-
-function keepAlive() {
-    window.addEventListener("yt-navigate-finish", () => {
-        mountUI();
-        Mods.zoom?.applyZoomTo?.(activeWrapper());
-    }, { passive: true });
-
-    const mo = new MutationObserver(() => {
-        if (!document.getElementById("yt-ext-buttons-root")) mountUI();
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", async () => { await loadAll(); keepAlive(); mountUI(); });
+// content.js (ES module) — stabil boot + SPA-safe mount
+if (globalThis.__yt_ext_boot__) {
+    // redan bootad
 } else {
-    (async () => { await loadAll(); keepAlive(); mountUI(); })();
+    globalThis.__yt_ext_boot__ = true;
+
+    const isWatch = () =>
+        location.pathname.startsWith("/watch") && !location.pathname.startsWith("/watch/");
+
+    const raf = () => new Promise(r => requestAnimationFrame(r));
+    async function waitFor(sel, { timeout = 8000 } = {}) {
+        const t0 = performance.now();
+        while (performance.now() - t0 < timeout) {
+            const el = document.querySelector(sel);
+            if (el) return el;
+            await raf();
+        }
+        return null;
+    }
+
+    async function importModSafe(path) {
+        const url = chrome.runtime.getURL(path);
+        // för tydligare fel vid saknade filer
+        const resp = await fetch(url, { cache: "no-store" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${path}`);
+        return import(url);
+    }
+
+    let buttonsRoot = null;
+    let fullApi = null;
+    let zoomApi = null;
+    let rafId = 0;
+
+    async function mount() {
+        try {
+            if (!isWatch()) { unmount(); return; }
+
+            const flexy  = await waitFor("ytd-watch-flexy");
+            const player = await waitFor("#player,#player-container,#player-theater-container");
+            if (!flexy || !player) return;
+
+            const [buttons, zoom, full] = await Promise.all([
+                importModSafe("components/buttons.js"),
+                importModSafe("components/zoom.js"),
+                importModSafe("components/fullWindow.js"),
+            ]);
+
+            const { attachButtons } = buttons;
+            zoomApi = zoom;
+            fullApi = full;
+
+            buttonsRoot = attachButtons({ onFullWindow: () => fullApi.toggleFullWindow() });
+            zoomApi?.mountIntoButtons?.(buttonsRoot);
+
+            const sync = () => {
+                const btn = buttonsRoot?.querySelector("#yt-ext-btn-fullwindow");
+                if (btn) btn.textContent = fullApi.isActive() ? "Exit FullWindow" : "FullWindow";
+            };
+            window.addEventListener("YT_EXT_FW_STATE", sync, { passive: true });
+            sync();
+        } catch (err) {
+            console.error("[YT-FLEX2] mount failed:", err);
+        }
+    }
+
+    function unmount() {
+        try {
+            if (fullApi?.isActive()) fullApi.disable();
+            document.getElementById("yt-ext-buttons-root")?.remove();
+        } catch (err) {
+            console.error("[YT-FLEX2] unmount failed:", err);
+        }
+    }
+
+    const schedule = () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(mount);
+    };
+
+    // SPA / annonser / miniplayer
+    window.addEventListener("yt-navigate-start", () => {
+        try { if (fullApi?.isActive()) fullApi.disable(); } catch {}
+    }, { passive: true });
+    window.addEventListener("yt-navigate-finish", schedule, { passive: true });
+    document.addEventListener("ytp-ad-ended", schedule, { passive: true });
+
+    // initial mount
+    schedule();
 }

@@ -1,157 +1,124 @@
-// Full Window: flytta spelaren till en viewport-fylld wrapper
-// Anti-black-screen körs både när vi aktiverar och när vi lämnar.
-// Skickar event "YT_EXT_FW_STATE" med {active:true/false} för att uppdatera knapptext.
-import { getPlayer, moveIntoWrapper, getWatchRoot } from '../utils/dom.js';
-
-let state = { active: false, restore: null };
+// Super-stabil FullWindow med mjuk enter/exit, ingen DOM-flytt
+let active = false;
+let toggling = false;
 
 function injectCss() {
-    const href = chrome.runtime.getURL('components/fullWindow.css');
+    const href = chrome.runtime.getURL("components/fullWindow.css");
     if (!document.querySelector(`link[href="${href}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
         link.href = href;
         document.head.appendChild(link);
     }
 }
 
-function emitState() {
-    window.dispatchEvent(new CustomEvent("YT_EXT_FW_STATE", { detail: { active: state.active } }));
-}
-
-export function toggleFullWindow() {
-    if (state.active) disable(); else enable();
-}
-
-function forceResizePings() {
-    const ping = () => window.dispatchEvent(new Event('resize'));
-    ping(); setTimeout(ping, 80); setTimeout(ping, 200); setTimeout(ping, 400);
-}
-
-// ---- Anti black-screen toolkit (extra robust dubbel-kick) ----
-async function reviveVideoAfterMove(playerRoot) {
-    const v  = playerRoot.querySelector('video.html5-main-video') || playerRoot.querySelector('video');
-    const vc = playerRoot.querySelector('.html5-video-container');
-    if (!v) { forceResizePings(); return; }
-
-    v.setAttribute('playsinline', '');
-    v.style.background = '#000';
-
-    if (vc) {
-        vc.style.transform = 'none';
-        vc.style.willChange = 'auto';
-        vc.style.opacity = '1';
+const raf = () => new Promise(r => requestAnimationFrame(r));
+async function waitFor(sel, { timeout = 5000 } = {}) {
+    const t0 = performance.now();
+    while (performance.now() - t0 < timeout) {
+        const el = document.querySelector(sel);
+        if (el) return el;
+        await raf();
     }
+    return null;
+}
 
-    const wasPaused = v.paused;
+function emit() {
+    window.dispatchEvent(new CustomEvent("YT_EXT_FW_STATE", { detail: { active } }));
+}
+function pingResize() {
+    window.dispatchEvent(new Event("resize"));
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 90);
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 220);
+}
+function reviveVideo() {
+    const v = document.querySelector("video.html5-main-video, ytd-player video, video");
+    if (!v) return;
+    try { v.setAttribute("playsinline", ""); } catch {}
     const t = v.currentTime;
+    try { v.currentTime = t + 0.000001; } catch {}
+    if (v.paused) { v.play().catch(()=>{}); }
+    pingResize();
+}
 
-    const nudgeOnce = async () => {
-        const prevDisp = v.style.display;
-        v.style.display = 'none';
-        void v.offsetHeight;                // reflow
-        v.style.display = prevDisp || '';
+export function isActive() { return active; }
 
-        try { v.currentTime = t + 0.000001; } catch {}
+export async function enable() {
+    if (active || toggling) return;
+    toggling = true;
+    try {
+        injectCss();
+        const flexy  = await waitFor("ytd-watch-flexy");
+        const player = await waitFor("#player,#player-container,#player-theater-container");
+        if (!flexy || !player) return;
 
-        v.style.willChange = 'transform, opacity, filter';
-        v.style.transform  = 'translateZ(0)';
-        v.style.opacity    = '0.9999';
-        v.style.filter     = 'brightness(1.0001)';
+        document.documentElement.classList.add("yt-ext-no-scroll");
+        document.body.classList.add("yt-ext-no-scroll");
 
-        if (!wasPaused) { try { await v.play(); } catch {} }
+        // len enter
+        flexy.classList.add("yt-ext-fw-prep");
+        void document.documentElement.offsetHeight; // flush
+        flexy.classList.add("yt-ext-fullwindow-active","yt-ext-fw-entering");
 
-        const cleanup = () => {
-            v.style.willChange = '';
-            v.style.transform  = '';
-            v.style.opacity    = '';
-            v.style.filter     = '';
+        let ended = false;
+        const done = () => {
+            if (ended) return;
+            ended = true;
+            flexy.classList.remove("yt-ext-fw-entering","yt-ext-fw-prep");
+            flexy.classList.add("yt-ext-fw-ready");
+            active = true;
+            emit(); pingResize(); reviveVideo();
         };
 
-        if ('requestVideoFrameCallback' in v) {
+        const v = document.querySelector("video");
+        if (v && "requestVideoFrameCallback" in v) {
             // @ts-ignore
-            v.requestVideoFrameCallback(() => cleanup());
+            v.requestVideoFrameCallback(() => done());
+            setTimeout(done, 450); // safety
         } else {
-            setTimeout(cleanup, 120);
+            setTimeout(done, 250);
         }
-    };
-
-    await nudgeOnce();
-    // extra spark efter ~150ms
-    setTimeout(() => { nudgeOnce(); forceResizePings(); }, 150);
-    // och en sista efter ~350ms (täcker sega codecs)
-    setTimeout(() => { nudgeOnce(); forceResizePings(); }, 350);
-
-    forceResizePings();
-}
-
-function enable() {
-    injectCss();
-
-    const player = getPlayer();
-    if (!player) return;
-
-    // Stabilare layout i theater
-    const wf = getWatchRoot();
-    if (wf && !wf.hasAttribute('theater')) {
-        try { wf.setAttribute('theater', ''); } catch {}
+    } finally {
+        toggling = false;
     }
-
-    const wrap = document.createElement('div');
-    wrap.className = 'yt-ext-fw-wrap';
-    Object.assign(wrap.style, {
-        position: 'fixed', left: '0', top: '0',
-        width: '100vw', height: '100vh',
-        zIndex: '2147483646', background: '#000', overflow: 'hidden'
-    });
-
-    (getWatchRoot() || document.documentElement).appendChild(wrap);
-
-    state.restore = moveIntoWrapper(player, wrap);
-    state.active = true;
-
-    document.documentElement.classList.add('yt-ext-no-scroll');
-    document.body.classList.add('yt-ext-no-scroll');
-
-    requestAnimationFrame(() => reviveVideoAfterMove(player));
-    setTimeout(() => reviveVideoAfterMove(player), 120);   // double-kick
-    forceResizePings();
-
-    // ESC stänger
-    window.addEventListener('keydown', onEscOnce, { once: true });
-
-    emitState();
 }
 
-function disable() {
-    if (!state.active) return;
+export async function disable() {
+    if (!active || toggling) return;
+    toggling = true;
+    try {
+        const flexy = document.querySelector("ytd-watch-flexy");
+        if (!flexy) return;
 
-    const doRestore = state.restore;
-    state.restore = null;
-    state.active = false;
+        // len exit
+        flexy.classList.add("yt-ext-fw-leaving");
 
-    if (doRestore) doRestore();
+        const finish = () => {
+            flexy.classList.remove(
+                "yt-ext-fullwindow-active","yt-ext-fw-ready",
+                "yt-ext-fw-leaving","yt-ext-fw-prep","yt-ext-fw-entering"
+            );
+            document.documentElement.classList.remove("yt-ext-no-scroll");
+            document.body.classList.remove("yt-ext-no-scroll");
+            active = false;
+            emit(); pingResize(); reviveVideo();
+        };
 
-    document.documentElement.classList.remove('yt-ext-no-scroll');
-    document.body.classList.remove('yt-ext-no-scroll');
-
-    // Reparera svart skärm efter att vi lämnat overlayn
-    requestAnimationFrame(() => {
-        const player = getPlayer();
+        let ended = false;
+        const onend = () => { if (ended) return; ended = true; finish(); };
+        setTimeout(onend, 260);
+        const player = document.querySelector("#player,#player-container,#player-theater-container");
         if (player) {
-            reviveVideoAfterMove(player);
-            setTimeout(() => reviveVideoAfterMove(player), 120);  // extra kick
+            player.addEventListener("transitionend", onend, { once: true });
+            player.addEventListener("animationend", onend, { once: true });
         }
-    });
-
-    forceResizePings();
-
-    emitState();
+    } finally {
+        toggling = false;
+    }
 }
 
-function onEscOnce(e) {
-    if (e.key === 'Escape') disable();
-}
+export function toggleFullWindow() { (active ? disable() : enable()); }
 
-// Stäng vid SPA-navigering
-window.addEventListener('yt-navigate-start', () => { if (state.active) disable(); });
+// Autostäng vid SPA/miniplayer
+window.addEventListener("yt-navigate-start", () => { if (active) disable(); }, { passive: true });
+document.addEventListener("ytp-miniplayer-activate", () => { if (active) disable(); }, { passive: true });

@@ -1,21 +1,63 @@
-/* Zoom-slider (100–500%) i knapplådan */
+/* UI-stilen */
 #yt-ext-buttons-root .yt-ext-zoom-wrap {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto auto auto;
     align-items: center;
     gap: 8px;
     color: #fff;
     font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
+
 #yt-ext-buttons-root .yt-ext-zoom-range {
     -webkit-appearance: none; appearance: none;
-    height: 6px; border-radius: 999px; background: rgba(255,255,255,0.25); outline: none;
+    height: 6px; border-radius: 999px;
+    background: rgba(255,255,255,0.25); outline: none;
 }
+
 #yt-ext-buttons-root .yt-ext-zoom-range::-webkit-slider-thumb {
     -webkit-appearance: none; appearance: none;
-    width: 16px; height: 16px; border-radius: 50%; background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
 }
 #yt-ext-buttons-root .yt-ext-zoom-range::-moz-range-thumb {
-    width: 16px; height: 16px; border-radius: 50%; background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
+    width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
 }
-#yt-ext-buttons-root .yt-ext-zoom-value { min-width: 60px; text-align: right; opacity: .9; }
+
+#yt-ext-buttons-root .yt-ext-zoom-btn {
+    font: 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: transform .12s ease, background .12s ease;
+}
+#yt-ext-buttons-root .yt-ext-zoom-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.18);
+}
+#yt-ext-buttons-root .yt-ext-zoom-label { opacity: .9; min-width: 3.5ch; text-align: right; }
+
+/* ==== SJÄLVA ZOOMEN ==== */
+/* I FullWindow ansvarar din fullWindow.css redan för transform-scale.
+   För normal-läge använder vi .yt-ext-zooming för att undvika att alltid påverka layouten. */
+
+ytd-watch-flexy.yt-ext-zooming #player,
+ytd-watch-flexy.yt-ext-zooming #player-container,
+ytd-watch-flexy.yt-ext-zooming #player-theater-container {
+    overflow: hidden !important;
+}
+
+ytd-watch-flexy:not(.yt-ext-fullwindow-active).yt-ext-zooming .html5-video-container {
+    position: relative;
+}
+
+ytd-watch-flexy:not(.yt-ext-fullwindow-active).yt-ext-zooming video.html5-main-video,
+ytd-watch-flexy:not(.yt-ext-fullwindow-active).yt-ext-zooming video {
+    transform-origin: center center !important;
+    transform: scale(var(--yt-ext-zoom, 1)) !important;
+    transition: transform .12s ease;
+    will-change: transform;
+}
