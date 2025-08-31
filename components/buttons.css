@@ -1,5 +1,4 @@
-/* Flytande meny + plats för slider, rör inte YT-layouten */
-
+/* Flytande panel */
 #yt-ext-buttons-root {
     position: fixed;
     top: 16px;
@@ -7,12 +6,12 @@
     z-index: 2147483647;
     pointer-events: none;
 }
-
 #yt-ext-buttons-root .yt-ext-buttons {
     display: flex;
     flex-direction: column;
     gap: 8px;
     align-items: stretch;
+    min-width: 240px;
     padding: 10px 12px;
     border: 1px solid rgba(255,255,255,0.14);
     border-radius: 12px;
@@ -20,14 +19,9 @@
     backdrop-filter: blur(6px);
     box-shadow: 0 8px 24px rgba(0,0,0,0.35);
     pointer-events: auto;
-    min-width: 220px;
+    user-select: none;
 }
-
-#yt-ext-buttons-root .yt-ext-btn-row {
-    display: flex;
-    gap: 8px;
-}
-
+#yt-ext-buttons-root .yt-ext-btn-row { display: flex; gap: 8px; }
 #yt-ext-buttons-root .yt-ext-btn {
     flex: 1;
     font: inherit;
@@ -37,11 +31,11 @@
     background: rgba(255,255,255,0.12);
     color: #fff;
     cursor: pointer;
-    user-select: none;
+    line-height: 1;
     transition: filter .12s ease, background .12s ease, transform .06s ease;
 }
 #yt-ext-buttons-root .yt-ext-btn:hover { background: rgba(255,255,255,0.20); filter: brightness(1.05); }
 #yt-ext-buttons-root .yt-ext-btn:active { transform: translateY(1px); }
+#yt-ext-buttons-root .yt-ext-btn:focus-visible { outline: 2px solid #8ab4ff; outline-offset: 2px; border-color: #8ab4ff; }
 
-/* slot för zoom-slidern */
-#yt-ext-buttons-root .yt-ext-zoom-slot { }
+#yt-ext-buttons-root .yt-ext-zoom-slot { margin-top: 2px; }

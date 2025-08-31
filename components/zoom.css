@@ -1,4 +1,4 @@
-/* Zoom-slider som placeras i buttons–slotten */
+/* Zoom-slider (100–500%) i knapplådan */
 #yt-ext-buttons-root .yt-ext-zoom-wrap {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -18,4 +18,4 @@
 #yt-ext-buttons-root .yt-ext-zoom-range::-moz-range-thumb {
     width: 16px; height: 16px; border-radius: 50%; background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
 }
-#yt-ext-buttons-root .yt-ext-zoom-value { min-width: 48px; text-align: right; opacity: .9; }
+#yt-ext-buttons-root .yt-ext-zoom-value { min-width: 60px; text-align: right; opacity: .9; }

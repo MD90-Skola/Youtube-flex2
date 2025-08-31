@@ -1,27 +1,23 @@
-// Laddar komponenter, monterar knappar + zoom-slider och ser till att zoom appliceras
-// direkt efter att Full Window / Flex aktiveras.
-
+// Mountar UI, uppdaterar knapptext, och ser till att zoom appliceras direkt.
 const urls = {
     buttons: chrome.runtime.getURL("components/buttons.js"),
     full:    chrome.runtime.getURL("components/fullWindow.js"),
-    flex:    chrome.runtime.getURL("components/flex.js"),
     zoom:    chrome.runtime.getURL("components/zoom.js"),
 };
 
-let Mods = { buttons: null, full: null, flex: null, zoom: null };
+let Mods = { buttons: null, full: null, zoom: null };
 
 async function loadAll() {
-    const [buttons, full, flex, zoom] = await Promise.all([
+    const [buttons, full, zoom] = await Promise.all([
         import(urls.buttons),
         import(urls.full),
-        import(urls.flex),
         import(urls.zoom),
     ]);
-    Mods = { buttons, full, flex, zoom };
+    Mods = { buttons, full, zoom };
 }
 
 function activeWrapper() {
-    return document.querySelector(".yt-ext-fw-wrap") || document.querySelector(".yt-ext-flex-wrap") || null;
+    return document.querySelector(".yt-ext-fw-wrap") || null;
 }
 
 function mountUI() {
@@ -30,18 +26,24 @@ function mountUI() {
     const root = Mods.buttons.attachButtons({
         onFullWindow: () => {
             Mods.full?.toggleFullWindow?.();
-            // ⬇️ säkerställ att aktuell zoom sätts på nya wrapen direkt
-            setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0);
-        },
-        onFlex: () => {
-            Mods.flex?.toggleFlex?.();
-            setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0);
-        },
+            // applicera zoom & uppdatera label efter toggle
+            setTimeout(() => {
+                Mods.zoom?.applyZoomTo?.(activeWrapper());
+            }, 0);
+        }
     });
 
-    // Montera zoom–slider i knapparnas slot
+    // zoom in i knapplådan + init
     Mods.zoom.mountIntoButtons(root, () => activeWrapper());
-    Mods.zoom.applyZoomTo(activeWrapper()); // init
+    Mods.zoom.applyZoomTo(activeWrapper());
+
+    // lyssna på FW-state för att byta knapptext
+    window.addEventListener("YT_EXT_FW_STATE", (e) => {
+        Mods.buttons?.setFullButtonLabel?.(e?.detail?.active ? "Normal" : "FullWindow");
+    }, { passive: true });
+
+    // initial label
+    Mods.buttons?.setFullButtonLabel?.(activeWrapper() ? "Normal" : "FullWindow");
 }
 
 function keepAlive() {
@@ -61,10 +63,3 @@ if (document.readyState === "loading") {
 } else {
     (async () => { await loadAll(); keepAlive(); mountUI(); })();
 }
-
-// (Valfritt) Popup-kommandon
-chrome.runtime.onMessage.addListener((msg) => {
-    if (!msg || !msg.command) return;
-    if (msg.command === "toggleFullWindow") { Mods.full?.toggleFullWindow?.(); setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0); }
-    if (msg.command === "toggleFlex")       { Mods.flex?.toggleFlex?.();       setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0); }
-});

@@ -1,16 +1,6 @@
 // Flex: flytta spelaren till resizable overlay. Ömsesidig exkludering med Full Window.
 import { getPlayer, moveIntoWrapper, getWatchRoot } from "../utils/dom.js";
 
-function injectCss() {
-    const href = chrome.runtime.getURL("components/flex.css");
-    if (!document.querySelector(`link[href="${href}"]`)) {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = href;
-        document.head.appendChild(link);
-    }
-}
-
 let state = { active: false, restore: null };
 
 export function toggleFlex() {
@@ -22,13 +12,24 @@ function forceResizePings() {
     ping(); setTimeout(ping, 80); setTimeout(ping, 200);
 }
 
+function injectCss() {
+    const href = chrome.runtime.getURL("components/flex.css");
+    if (!document.querySelector(`link[href="${href}"]`)) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = href;
+        document.head.appendChild(link);
+    }
+}
+
 function enable() {
     injectCss();
-    const player = getPlayer();
-    if (!player) return;
 
     // Stäng Full Window om aktivt
     window.postMessage({ type: "YT_EXT_DISABLE_FULL_IF_ACTIVE" }, "*");
+
+    const player = getPlayer();
+    if (!player) return;
 
     const wrap = document.createElement("div");
     wrap.className = "yt-ext-flex-wrap";
@@ -63,7 +64,12 @@ function disable() {
     forceResizePings();
 }
 
+// Auto-reset vid navigation
 window.addEventListener("yt-navigate-start", () => { if (state.active) disable(); });
+
+// Lyssna på "stäng mig" när andra läget startas
 window.addEventListener("message", (ev) => {
-    if (ev?.data?.type === "YT_EXT_DISABLE_FLEX_IF_ACTIVE" && state.active) disable();
+    if (ev?.data?.type === "YT_EXT_DISABLE_FLEX_IF_ACTIVE" && state.active) {
+        disable();
+    }
 });

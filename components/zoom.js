@@ -1,6 +1,4 @@
-// Zoom: slider 100–200% som skalar videon via CSS-variabeln --yt-ext-zoom på aktuell wrap.
-// Sparar värdet i documentElement och applicerar på nuvarande wrap.
-
+// Zoom-slider 100–500 % som skalar videon i Full Window via CSS-variabeln --yt-ext-zoom
 const CSS_HREF = chrome.runtime.getURL("components/zoom.css");
 const SLOT_SEL = ".yt-ext-zoom-slot";
 const Z_VAR    = "--yt-ext-zoom";
@@ -16,19 +14,25 @@ function injectCssOnce() {
 }
 
 function activeWrapper() {
-    return document.querySelector(".yt-ext-fw-wrap") || document.querySelector(".yt-ext-flex-wrap") || null;
+    return document.querySelector(".yt-ext-fw-wrap") || null;
 }
 
-function setZoomPercent(pct) {
-    currentPercent = Math.max(100, Math.min(200, Number(pct) || 100));
-    document.documentElement.style.setProperty(Z_VAR, (currentPercent / 100).toString());
-    applyZoomTo(activeWrapper());
+function normalize(pct) {
+    const n = Number(pct);
+    if (Number.isNaN(n)) return 100;
+    return Math.min(500, Math.max(100, Math.round(n)));
 }
 
-export function applyZoomTo(wrap) {
-    if (!wrap) return;
-    // Inline vinner över ev. gamla värden – säkert och snabbt
-    wrap.style.setProperty(Z_VAR, (currentPercent / 100).toString());
+function applyZoomInternal(targetWrap /* nullable */) {
+    const scale = currentPercent / 100;
+    // Sätt även på <html> om andra patcher vill läsa den
+    document.documentElement.style.setProperty(Z_VAR, String(scale));
+    if (targetWrap) targetWrap.style.setProperty(Z_VAR, String(scale));
+}
+
+export function applyZoomTo(wrapMaybe) {
+    const wrap = wrapMaybe || activeWrapper();
+    applyZoomInternal(wrap);
 }
 
 export function mountIntoButtons(buttonsRoot, getActiveWrapperFn) {
@@ -38,7 +42,7 @@ export function mountIntoButtons(buttonsRoot, getActiveWrapperFn) {
 
     slot.innerHTML = `
     <div class="yt-ext-zoom-wrap">
-      <input class="yt-ext-zoom-range" type="range" min="100" max="200" step="1" value="${currentPercent}" />
+      <input class="yt-ext-zoom-range" type="range" min="100" max="500" step="1" value="${currentPercent}" />
       <div class="yt-ext-zoom-value">${currentPercent}%</div>
     </div>
   `;
@@ -47,13 +51,17 @@ export function mountIntoButtons(buttonsRoot, getActiveWrapperFn) {
     const value = slot.querySelector(".yt-ext-zoom-value");
 
     const update = (pct) => {
-        setZoomPercent(pct);
+        currentPercent = normalize(pct);
         value.textContent = `${currentPercent}%`;
-        const aw = (typeof getActiveWrapperFn === "function") ? getActiveWrapperFn() : activeWrapper();
-        applyZoomTo(aw);
+        const wrap = (typeof getActiveWrapperFn === "function") ? getActiveWrapperFn() : activeWrapper();
+        applyZoomInternal(wrap);
     };
 
     range.addEventListener("input", (e) => update(e.target.value));
-    // Init – synca UI & var
+
+    // Init
     update(currentPercent);
+
+    // Re-apply efter SPA-navigering
+    window.addEventListener("yt-navigate-finish", () => update(currentPercent), { passive: true });
 }
