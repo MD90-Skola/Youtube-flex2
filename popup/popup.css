@@ -1,15 +1,80 @@
-* { box-sizing: border-box; }
-body { margin: 0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-.wrap { width: 240px; padding: 12px; }
-h1 { font-size: 16px; margin: 0 0 10px; }
-button {
-    width: 100%;
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border-radius: 10px;
-    border: 1px solid rgba(0,0,0,0.2);
-    background: #f3f3f3;
-    cursor: pointer;
+:root { color-scheme: dark; }
+body {
+    margin: 0; padding: 14px 14px 12px;
+    font: 13px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color: #fff; background: #0f1115;
+    min-width: 280px;
 }
-button:hover { background: #eaeaea; }
-.hint { color: #555; margin-top: 6px; font-size: 12px; }
+.card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 12px; margin-bottom: 10px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+}
+h1 { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+.muted { opacity: .8 }
+.row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.kbd {
+    background:#1b1f2a; border:1px solid #2c3446;
+    border-radius:6px; padding:2px 6px;
+}
+a.icon-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 1.6rem;
+    transition: transform .15s ease, opacity .15s ease;
+}
+a.icon-link:hover { transform: translateY(-1px); opacity: .85; }
+.icon-github { color: #fff; }
+.icon-youtube { color: #ff4d4d; }
+
+
+button.btn {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    display: flex; align-items: center; gap:6px;
+    transition: transform .12s ease, background .12s ease;
+}
+button.btn:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.18);
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.25);
+    outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.4);
+}
+input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.4);
+}
+
+
+/* ersättning för Bootstrap's .visually-hidden */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0);
+    white-space: nowrap; border: 0;
+}

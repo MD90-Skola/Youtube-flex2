@@ -1,0 +1,27 @@
+/* Fade.css — banner-overlay */
+.yt-ext-fade-banner {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2147483647;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font: 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    padding: 12px 20px;
+    border-radius: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    text-align: center;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.yt-ext-fade-banner.visible {
+    opacity: 1;
+}
+
+.yt-ext-fade-text b {
+    color: #4FC3F7;
+}

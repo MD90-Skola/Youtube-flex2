@@ -1,18 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>YT Tools</title>
+    <meta charset="utf-8" />
+    <title>YouTube Flex2</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <!-- Popup CSS -->
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-<div class="wrap">
-    <h1>YT Tools</h1>
-    <button id="btnFull">Toggle Full Window</button>
-    <button id="btnFlex">Toggle Flex</button>
-    <p class="hint">Open a YouTube video tab first.</p>
+
+
+<div class="card">
+    <h1>Controls</h1>
+    <div class="row" style="margin-top:8px; gap:10px;">
+        <!-- FullWindow button -->
+        <button id="popup-fw-btn" class="btn">
+            <i class="bi bi-arrows-fullscreen"></i> FullWindow
+        </button>
+
+        <!-- Slider holder -->
+        <div class="slider-holder">
+            <input id="popup-zoom-slider" type="range" min="100" max="500" step="1" value="100">
+        </div>
+    </div>
+
 </div>
-<script src="popup.js"></script>
+
+
+
+
+
+
+
+<div class="card">
+    <h1>YouTube Flex2</h1>
+    <div class="muted">This popup is just information. The actual features run on YouTube pages.</div>
+</div>
+
+<div class="card">
+    <h1>Tips</h1>
+    <div>- Press <span class="kbd">FullWindow</span> button on the page.</div>
+    <div>- Press <b>ESC</b> to exit.</div>
+    <div>- Hold <b>Alt</b> + <b>Mouse1</b> to move zoom.</div>
+    <div>- Use <b>Alt</b> + <b>+</b>/<b>-</b> or mouse wheel (with Alt) for zoom.</div>
+    <div class="muted" style="margin-top:6px">
+        Open a YouTube video (even in Incognito) and buttons will appear automatically.
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<div class="card">
+    <h1>MD90</h1>
+    <div class="row">
+        <!-- GitHub icon -->
+        <a class="icon-link icon-github" href="https://github.com/MD90-Skola"
+           target="_blank" rel="noopener noreferrer" title="GitHub">
+            <i class="bi bi-github"></i>
+        </a>
+
+
+
+
+        <!-- Hem-ikon (matchar de andra) -->
+        <a class="icon-link icon-home"
+           href="https://minikod.se"
+           target="_blank" rel="noopener noreferrer"
+           title="Hem" aria-label="Hem">
+            <i class="bi bi-house-door"></i>
+        </a>
+
+
+
+
+
+        <!-- YouTube icon -->
+        <a class="icon-link icon-youtube" href="https://www.youtube.com/@BrappBroTV"
+           target="_blank" rel="noopener noreferrer" title="YouTube">
+            <i class="bi bi-youtube"></i>
+        </a>
+    </div>
+    <div class="muted" style="margin-top:10px">
+        Follow me on GitHub and YouTube!
+    </div>
+</div>
+
+<div class="card">
+    <h1>Status</h1>
+    <div id="status" class="muted">Waiting for active YouTube tab…</div>
+</div>
+
+<!-- Popup JS -->
+<script type="module" src="popup.js"></script>
 </body>
 </html>
