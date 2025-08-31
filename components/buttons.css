@@ -1,34 +1,47 @@
-/* Flytande kontrollpanel */
+/* Rot inne i YouTubes kontrollrad */
+#yt-ext-buttons-root { display: inline-flex; align-items: center; }
+
+/* YT sätter spacing/storlek; håll knappen ren */
+#yt-ext-buttons-root .ytp-button { line-height: 0; padding: 0; }
+
+/* Dold slot – behövs för zoom.js mount (Alt+scroll/drag) */
+#yt-ext-buttons-root .yt-ext-zoom-slot { display: none !important; }
+
+/* Material-ikonens storlek */
+#yt-ext-buttons-root .yt-ext-material-icon {
+    font-size: 24px; line-height: 1; display: inline-block; vertical-align: middle;
+}
+
+/* Inline zoom-slider */
+#yt-ext-zoom-wrap { display: inline-flex; align-items: center; gap: 8px; margin-right: 8px; }
+#yt-ext-zoom-wrap input[type="range"] {
+    width: 140px; height: 20px; background: transparent; -webkit-appearance: none; appearance: none;
+}
+#yt-ext-zoom-wrap input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px; background: rgba(255,255,255,.35); border-radius: 999px;
+}
+#yt-ext-zoom-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; margin-top: -5px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,.25);
+}
+#yt-ext-zoom-wrap input[type="range"]::-moz-range-track {
+    height: 4px; background: rgba(255,255,255,.35); border-radius: 999px;
+}
+#yt-ext-zoom-wrap input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%; background: #fff; border: none; box-shadow: 0 0 0 2px rgba(0,0,0,.25);
+}
+#yt-ext-zoom-wrap .yt-ext-zoom-percent { min-width: 40px; text-align: right; color: #fff; opacity: .8; font: 12px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+
+#yt-ext-buttons-root,
+#yt-ext-buttons-root .ytp-button,
+#yt-ext-zoom-wrap input[type="range"] {
+    vertical-align: middle;
+}
+
 #yt-ext-buttons-root {
-    position: fixed;
-    right: 16px;
-    bottom: 20px;
-    z-index: 2147483647;
-    pointer-events: none;
+    display: inline-flex;
+    align-items: center;      /* centrerar allt vertikalt */
+    gap: 6px;                 /* lite luft mellan slider och knappar */
+    margin-top: -40px;         /* puttar upp ~2px för exakt center */
 }
-#yt-ext-buttons-root .yt-ext-buttons {
-    pointer-events: auto;
-    display: grid;
-    gap: 8px;
-    background: rgba(0,0,0,0.55);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 10px;
-    backdrop-filter: blur(6px);
-}
-#yt-ext-buttons-root .yt-ext-btn-row { display: flex; gap: 8px; }
-#yt-ext-buttons-root .yt-ext-btn {
-    font: 13px/1 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    color: #fff;
-    background: rgba(255,255,255,0.12);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    padding: 8px 10px;
-    cursor: pointer;
-    transition: transform .15s ease, background .15s ease;
-}
-#yt-ext-buttons-root .yt-ext-btn:hover {
-    transform: translateY(-1px);
-    background: rgba(255,255,255,0.18);
-}
-.yt-ext-zoom-slot { min-width: 180px; }
