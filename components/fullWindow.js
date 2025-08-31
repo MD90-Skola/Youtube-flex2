@@ -1,7 +1,19 @@
 // Full Window: flytta spelaren till en viewport-fylld wrapper (med robust anti-black-screen)
 import { getPlayer, moveIntoWrapper, getWatchRoot } from '../utils/dom.js';
 
+const ENABLE_PIP_FALLBACK = false; // sätt true om du VILL tillåta snabb PiP in/ut
+
 let state = { active: false, restore: null };
+
+function injectCss() {
+    const href = chrome.runtime.getURL('components/fullWindow.css');
+    if (!document.querySelector(`link[href="${href}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    }
+}
 
 export function toggleFullWindow() {
     if (state.active) disable(); else enable();
@@ -36,8 +48,7 @@ async function reviveVideoAfterMove(playerRoot) {
     // Dölj kort → reflow → visa
     const prevDisp = v.style.display;
     v.style.display = 'none';
-    // force reflow
-    void v.offsetHeight;
+    void v.offsetHeight; // force reflow
     v.style.display = prevDisp || '';
 
     // microseek för att kicka igång decodern (syns inte)
@@ -67,23 +78,22 @@ async function reviveVideoAfterMove(playerRoot) {
         setTimeout(cleanup, 120);
     }
 
-    // 4) Sista-reserv: PiP snabbt in/ut (kräver user gesture – vi körs i klickflödet)
-    try {
-        if (document.pictureInPictureEnabled && !document.pictureInPictureElement && !v.disablePictureInPicture) {
-            await v.requestPictureInPicture();
-            // så snart vi är i PiP → ut igen
-            if (document.pictureInPictureElement) {
-                await document.exitPictureInPicture();
+    // 4) Sista-reserv: PiP snabbt in/ut (kräver user gesture)
+    if (ENABLE_PIP_FALLBACK) {
+        try {
+            if (document.pictureInPictureEnabled && !document.pictureInPictureElement && !v.disablePictureInPicture) {
+                await v.requestPictureInPicture();
+                if (document.pictureInPictureElement) await document.exitPictureInPicture();
             }
-        }
-    } catch {
-        // Ignorera – inte alla miljöer tillåter PiP direkt
+        } catch { /* ignoreras */ }
     }
 
     forceResizePings();
 }
 
 function enable() {
+    injectCss();
+
     const player = getPlayer();
     if (!player) return;
 
@@ -99,6 +109,13 @@ function enable() {
     // Skapa viewport-wrap inne i watch-flexy (viktigt!)
     const wrap = document.createElement('div');
     wrap.className = 'yt-ext-fw-wrap';
+    // inline fallback ifall CSS-länken inte hunnit ladda
+    Object.assign(wrap.style, {
+        position: 'fixed', left: '0', top: '0',
+        width: '100vw', height: '100vh',
+        zIndex: '2147483646', background: '#000', overflow: 'hidden'
+    });
+
     const host = getWatchRoot() || document.documentElement;
     host.appendChild(wrap);
 
@@ -112,6 +129,7 @@ function enable() {
     // Kör anti-black-screen i nästa frame när DOM-flytten är klar
     requestAnimationFrame(() => { reviveVideoAfterMove(player); });
 
+    window.scrollTo(0, 0);
     forceResizePings();
 
     const onKey = (e) => { if (e.key === 'Escape') disable(); };

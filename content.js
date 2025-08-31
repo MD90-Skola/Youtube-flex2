@@ -1,43 +1,54 @@
-// Lättvikt: laddar modulerna och monterar Buttons-komponenten
-// Behåller popup-stödet via chrome.runtime.onMessage
+// Laddar komponenter, monterar knappar + zoom-slider och ser till att zoom appliceras
+// direkt efter att Full Window / Flex aktiveras.
 
-const urlButtons   = chrome.runtime.getURL("components/buttons.js");
-const urlFullWin   = chrome.runtime.getURL("components/fullWindow.js"); // ditt namn
-const urlFlex      = chrome.runtime.getURL("components/flex.js");
+const urls = {
+    buttons: chrome.runtime.getURL("components/buttons.js"),
+    full:    chrome.runtime.getURL("components/fullWindow.js"),
+    flex:    chrome.runtime.getURL("components/flex.js"),
+    zoom:    chrome.runtime.getURL("components/zoom.js"),
+};
 
-let Mods = { buttons: null, full: null, flex: null };
+let Mods = { buttons: null, full: null, flex: null, zoom: null };
 
 async function loadAll() {
-    const [buttons, full, flex] = await Promise.all([
-        import(urlButtons),
-        import(urlFullWin),
-        import(urlFlex),
+    const [buttons, full, flex, zoom] = await Promise.all([
+        import(urls.buttons),
+        import(urls.full),
+        import(urls.flex),
+        import(urls.zoom),
     ]);
-    Mods.buttons = buttons;
-    Mods.full    = full;
-    Mods.flex    = flex;
+    Mods = { buttons, full, flex, zoom };
+}
+
+function activeWrapper() {
+    return document.querySelector(".yt-ext-fw-wrap") || document.querySelector(".yt-ext-flex-wrap") || null;
 }
 
 function mountUI() {
-    if (!Mods.buttons) return;
-    if (document.getElementById("yt-ext-buttons-root")) return;
+    if (!Mods.buttons || !Mods.zoom) return;
 
-    Mods.buttons.attachButtons({
+    const root = Mods.buttons.attachButtons({
         onFullWindow: () => {
-            // Anropa din full window-funktion
-            if (Mods.full?.toggleFullWindow) Mods.full.toggleFullWindow();
+            Mods.full?.toggleFullWindow?.();
+            // ⬇️ säkerställ att aktuell zoom sätts på nya wrapen direkt
+            setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0);
         },
         onFlex: () => {
-            if (Mods.flex?.toggleFlex) Mods.flex.toggleFlex();
-        }
+            Mods.flex?.toggleFlex?.();
+            setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0);
+        },
     });
+
+    // Montera zoom–slider i knapparnas slot
+    Mods.zoom.mountIntoButtons(root, () => activeWrapper());
+    Mods.zoom.applyZoomTo(activeWrapper()); // init
 }
 
-function boot() {
-    mountUI();
-    // YouTubes SPA: se till att knapparna finns kvar
-    window.addEventListener("yt-navigate-finish", mountUI, { passive: true });
-    window.addEventListener("yt-page-data-fetched", mountUI, { passive: true });
+function keepAlive() {
+    window.addEventListener("yt-navigate-finish", () => {
+        mountUI();
+        Mods.zoom?.applyZoomTo?.(activeWrapper());
+    }, { passive: true });
 
     const mo = new MutationObserver(() => {
         if (!document.getElementById("yt-ext-buttons-root")) mountUI();
@@ -45,16 +56,15 @@ function boot() {
     mo.observe(document.documentElement, { childList: true, subtree: true });
 }
 
-// Popup-kommandon
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", async () => { await loadAll(); keepAlive(); mountUI(); });
+} else {
+    (async () => { await loadAll(); keepAlive(); mountUI(); })();
+}
+
+// (Valfritt) Popup-kommandon
 chrome.runtime.onMessage.addListener((msg) => {
     if (!msg || !msg.command) return;
-    if (msg.command === "toggleFullWindow") Mods.full?.toggleFullWindow?.();
-    if (msg.command === "toggleFlex")       Mods.flex?.toggleFlex?.();
+    if (msg.command === "toggleFullWindow") { Mods.full?.toggleFullWindow?.(); setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0); }
+    if (msg.command === "toggleFlex")       { Mods.flex?.toggleFlex?.();       setTimeout(() => Mods.zoom?.applyZoomTo?.(activeWrapper()), 0); }
 });
-
-// Starta
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", async () => { await loadAll(); boot(); });
-} else {
-    (async () => { await loadAll(); boot(); })();
-}

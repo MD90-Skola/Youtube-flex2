@@ -1,0 +1,21 @@
+/* Zoom-slider som placeras i buttons–slotten */
+#yt-ext-buttons-root .yt-ext-zoom-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font: 13px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+#yt-ext-buttons-root .yt-ext-zoom-range {
+    -webkit-appearance: none; appearance: none;
+    height: 6px; border-radius: 999px; background: rgba(255,255,255,0.25); outline: none;
+}
+#yt-ext-buttons-root .yt-ext-zoom-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%; background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
+}
+#yt-ext-buttons-root .yt-ext-zoom-range::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%; background: #fff; cursor: pointer; border: 1px solid rgba(0,0,0,0.4);
+}
+#yt-ext-buttons-root .yt-ext-zoom-value { min-width: 48px; text-align: right; opacity: .9; }

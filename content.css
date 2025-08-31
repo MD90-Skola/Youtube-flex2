@@ -1,28 +1,50 @@
-/* =======================================================
-   YT Tools — content.css (fullt omskriven, isolerad styling)
-   - Full Window wrap
-   - Flex wrap (resizable)
-   - Letterbox-fit (inga konstiga zooms)
-   - Anti black-screen neutralisering
-   ======================================================= */
+/* Flytande kontrollruta (påverkar inte layout) */
+#yt-ext-floating-controls {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 2147483647; /* över allt */
+    pointer-events: auto;
+    user-select: none;
+}
+#yt-ext-floating-controls .yt-ext-floating-inner {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.35);
+}
+#yt-ext-floating-controls .yt-ext-btn {
+    font: inherit;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.10);
+    color: #fff;
+    cursor: pointer;
+}
+#yt-ext-floating-controls .yt-ext-btn:hover {
+    background: rgba(255,255,255,0.18);
+}
 
-/* ---------- FULL WINDOW WRAP (fyll hela fönstret) ---------- */
+/* FULL WINDOW (påverkar bara när aktivt) */
 .yt-ext-fw-wrap {
     position: fixed !important;
     inset: 0 !important;
     width: 100vw !important;
-    /* Fallback + modern viewport-höjd för exakt fönsterhöjd */
     height: 100vh !important;
-    height: 100dvh !important;
-    z-index: 2147483646 !important;     /* under knapparna men över allt annat */
+    z-index: 2147483646 !important;
     background: #000 !important;
-    overflow: hidden !important;
 }
+html.yt-ext-no-scroll, body.yt-ext-no-scroll { overflow: hidden !important; }
 
-/* ---------- FLEX WRAP (flytande, resizable) ---------- */
+/* FLEX (påverkar bara när aktivt) */
 .yt-ext-flex-wrap {
     position: fixed !important;
-    top: 72px !important;                /* lite luft från YT-headern */
+    top: 72px !important;
     left: 72px !important;
     width: 1280px !important;
     height: 720px !important;
@@ -31,28 +53,33 @@
     resize: both !important;
     overflow: hidden !important;
     background: #000 !important;
-    border: 1px solid rgba(255,255,255,0.25) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 14px 40px rgba(0,0,0,0.5) !important;
-    z-index: 2147483645 !important;      /* under FW + knappar */
+    border: 1px solid rgba(255,255,255,0.2) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    z-index: 2147483645 !important;
 }
 
-/* Visuell resize-indikator (om din JS lägger till .yt-ext-flex-handle) */
-.yt-ext-flex-wrap .yt-ext-flex-handle {
-    position: absolute;
-    width: 18px;
-    height: 18px;
-    right: 6px;
-    bottom: 6px;
-    border: 1px solid rgba(255,255,255,0.5);
-    border-radius: 4px;
-    background: rgba(0,0,0,0.35);
-    cursor: nwse-resize;
-    z-index: 2147483647;
+/* Fyll wrapper när lägena är aktiva */
+.yt-ext-size-fill, .yt-ext-size-fill #movie_player, .yt-ext-size-fill video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
 }
 
-/* ---------- FYLL SPELAREN I WRAPPERS ---------- */
-/* Din moveIntoWrapper() sätter .yt-ext-size-fill på ytd-player */
+/* Full Window wrap som fyller viewporten */
+
+.yt-ext-fw-wrap {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483646 !important;
+    background: #000 !important;
+    overflow: hidden !important;
+}
+
+/* Spelaren fyller wrappern */
 .yt-ext-size-fill,
 .yt-ext-size-fill #movie_player,
 .yt-ext-size-fill .html5-video-container,
@@ -63,69 +90,13 @@
     max-height: none !important;
 }
 
-/* ---------- LETTERBOX-FIT (inga konstiga zooms) ---------- */
+/* Neutralisera saker som kan trigga svart bild efter flytt */
 .yt-ext-fw-wrap .html5-video-container,
-.yt-ext-flex-wrap .html5-video-container {
-    position: absolute !important;
-    inset: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: #000 !important;
-    transform: none !important;          /* neutralisera YT-zoom */
-    will-change: auto !important;
-}
-
-.yt-ext-fw-wrap video.html5-main-video,
-.yt-ext-flex-wrap video.html5-main-video,
-.yt-ext-fw-wrap video,
-.yt-ext-flex-wrap video {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    object-fit: contain !important;      /* ⬅️ kärnan: behåll ratio + blackbars */
-    object-position: center center !important;
-    background: #000 !important;
+.yt-ext-fw-wrap video.html5-main-video {
     transform: none !important;
     opacity: 1 !important;
+    background: #000 !important;
 }
+html.yt-ext-no-scroll, body.yt-ext-no-scroll { overflow: hidden !important; }
 
-/* Se till att overlay/captions inte klipps bort */
-.yt-ext-fw-wrap #movie_player,
-.yt-ext-flex-wrap #movie_player {
-    width: 100% !important;
-    height: 100% !important;
-    background: transparent !important;
-}
 
-/* ---------- ANTI BLACK-SCREEN SAFETY ---------- */
-.yt-ext-fw-wrap .html5-video-container,
-.yt-ext-flex-wrap .html5-video-container {
-    /* ibland lämnar YouTube kvar en transform som låser videon → neutralisera */
-    transform: none !important;
-    opacity: 1 !important;
-}
-
-/* ---------- LÅS SID-SCROLL NÄR FULL WINDOW ÄR PÅ ---------- */
-html.yt-ext-no-scroll,
-body.yt-ext-no-scroll {
-    overflow: hidden !important;
-}
-
-/* ---------- (Valfritt) fokus-stöd om du har tabbbar knappar inne i wraps ---------- */
-.yt-ext-fw-wrap :focus-visible,
-.yt-ext-flex-wrap :focus-visible {
-    outline: 2px solid #8ab4ff;
-    outline-offset: 2px;
-}
-
-/* ---------- Små responsiva tweaks ---------- */
-@media (max-width: 1200px) {
-    .yt-ext-flex-wrap {
-        top: 56px !important;
-        left: 32px !important;
-        width: min(92vw, 1280px) !important;
-        height: min(52vw, 720px) !important;
-    }
-}

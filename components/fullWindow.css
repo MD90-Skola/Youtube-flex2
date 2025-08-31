@@ -1,0 +1,55 @@
+/* Full Window – fyller viewport; letterbox; zoom via --yt-ext-zoom (100–200%) */
+
+.yt-ext-fw-wrap {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;          /* exakt synlig fönsterhöjd där det stöds */
+    z-index: 2147483646 !important;      /* under knappar, över resten */
+    background: #000 !important;
+    overflow: hidden !important;
+
+    /* Zoom-variabel (1.0 = 100%) – kan även sättas inline av zoom.js */
+    --yt-ext-zoom: var(--yt-ext-zoom, 1);
+}
+
+/* Fyll spelaren i vår wrap */
+.yt-ext-size-fill,
+.yt-ext-size-fill #movie_player,
+.yt-ext-size-fill .html5-video-container,
+.yt-ext-size-fill video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+}
+
+/* Letterbox + centrera video; neutralisera YT-zoom/transforms */
+.yt-ext-fw-wrap .html5-video-container {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #000 !important;
+    transform: none !important;
+    will-change: auto !important;
+}
+
+/* Skala endast videon (kontrollerna följer med naturligt) */
+.yt-ext-fw-wrap video.html5-main-video,
+.yt-ext-fw-wrap video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;      /* blackbars vid behov */
+    object-position: center center !important;
+    background: #000 !important;
+    transform-origin: center center !important;
+    transform: scale(var(--yt-ext-zoom)) !important; /* 1.00–2.00 */
+    will-change: transform !important;
+    opacity: 1 !important;
+}
+
+/* Lås sid-scroll när FW är aktivt (sätts i JS) */
+html.yt-ext-no-scroll, body.yt-ext-no-scroll { overflow: hidden !important; }

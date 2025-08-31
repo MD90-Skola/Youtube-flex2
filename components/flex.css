@@ -1,0 +1,40 @@
+/* Flex – resizable overlay + letterbox + zoom-variabel */
+.yt-ext-flex-wrap {
+    position: fixed !important;
+    top: 72px !important;
+    left: 72px !important;
+    width: 1280px !important;
+    height: 720px !important;
+    min-width: 480px !important;
+    min-height: 270px !important;
+    resize: both !important;
+    overflow: hidden !important;
+    background: #000 !important;
+    border: 1px solid rgba(255,255,255,0.25) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5) !important;
+    z-index: 2147483645 !important;
+    --yt-ext-zoom: 1;
+}
+.yt-ext-flex-wrap .yt-ext-flex-handle {
+    position: absolute;
+    width: 18px; height: 18px; right: 6px; bottom: 6px;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 4px; background: rgba(0,0,0,0.35); cursor: nwse-resize;
+    z-index: 2147483647;
+}
+.yt-ext-size-fill,
+.yt-ext-size-fill #movie_player,
+.yt-ext-size-fill .html5-video-container,
+.yt-ext-size-fill video { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; }
+.yt-ext-flex-wrap .html5-video-container {
+    position: absolute !important; inset: 0 !important;
+    display: flex !important; align-items: center !important; justify-content: center !important;
+    background: #000 !important; transform: none !important; will-change: auto !important;
+}
+.yt-ext-flex-wrap video.html5-main-video,
+.yt-ext-flex-wrap video {
+    width: 100% !important; height: 100% !important;
+    object-fit: contain !important; object-position: center center !important; background: #000 !important;
+    transform-origin: center center !important; transform: scale(var(--yt-ext-zoom)) !important; will-change: transform !important; opacity: 1 !important;
+}

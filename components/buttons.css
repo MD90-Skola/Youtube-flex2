@@ -1,33 +1,47 @@
-/* Flytande knappgrupp, påverkar inte YouTubes layout */
+/* Flytande meny + plats för slider, rör inte YT-layouten */
+
 #yt-ext-buttons-root {
     position: fixed;
-    /* var 16px; flytta 10px åt höger och 10px upp */
-    top: 6px;
-    right: 6px;
+    top: 16px;
+    right: 16px;
     z-index: 2147483647;
     pointer-events: none;
 }
 
 #yt-ext-buttons-root .yt-ext-buttons {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    align-items: center;
-    padding: 8px 10px;
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 10px;
+    align-items: stretch;
+    padding: 10px 12px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.45);
     backdrop-filter: blur(6px);
-    background: rgba(0,0,0,0.35);
-    pointer-events: auto; /* ...men tillåt klick på själva gruppen */
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    pointer-events: auto;
+    min-width: 220px;
 }
+
+#yt-ext-buttons-root .yt-ext-btn-row {
+    display: flex;
+    gap: 8px;
+}
+
 #yt-ext-buttons-root .yt-ext-btn {
+    flex: 1;
     font: inherit;
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.10);
+    padding: 6px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.12);
     color: #fff;
     cursor: pointer;
+    user-select: none;
+    transition: filter .12s ease, background .12s ease, transform .06s ease;
 }
-#yt-ext-buttons-root .yt-ext-btn:hover {
-    background: rgba(255,255,255,0.18);
-}
+#yt-ext-buttons-root .yt-ext-btn:hover { background: rgba(255,255,255,0.20); filter: brightness(1.05); }
+#yt-ext-buttons-root .yt-ext-btn:active { transform: translateY(1px); }
+
+/* slot för zoom-slidern */
+#yt-ext-buttons-root .yt-ext-zoom-slot { }

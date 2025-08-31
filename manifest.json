@@ -1,28 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "YouTube: Full Window + Flex (Buttons Component)",
-  "version": "0.4.0",
-  "description": "Flytande knappar ovanpå YouTube: Full Window (web fullscreen) och Flex (resizable). Separata komponenter för enkel underhållning.",
-  "permissions": [
-    "tabs",
-    "activeTab",
-    "scripting"
-  ],
-  "host_permissions": [
-    "https://www.youtube.com/*"
-  ],
+  "name": "YouTube Tools: Full Window + Flex + Zoom",
+  "version": "1.1.0",
+  "description": "Flytande meny ovanpå YouTube: Full Window (fyll fönstret), Flex (resizable) och Zoom 100–200%.",
+  "permissions": ["activeTab"],
+  "host_permissions": ["https://www.youtube.com/*"],
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/*"],
       "js": ["content.js"],
-      "css": ["content.css"],
       "run_at": "document_idle"
     }
   ],
-  "action": {
-    "default_title": "YT Tools",
-    "default_popup": "popup/index.html"
-  },
   "web_accessible_resources": [
     {
       "resources": [
